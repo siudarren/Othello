@@ -1,0 +1,50 @@
+.cell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 5px;
+    border: 3px solid #444; /* Border to distinguish cells */
+    cursor: pointer; /* Indicates interactiveness */
+    background-color: rgb(4, 135, 69);
+    z-index: 2;
+}
+
+.disk {
+    z-index: 3;
+    width: 95%;
+    height: 95%;
+    border-radius: 50%; /* Make the piece round */
+}
+
+.black {
+    background-color: black; /* Black piece */
+}
+
+.white {
+    background-color: white; /* White piece */
+    border: 3px solid #444;
+}
+
+.empty {
+    /* No specific styling needed, but you could set a background color */
+}
+
+.board {
+    margin: 0 auto;
+    border: 5px solid #444;
+    border-radius: 5px;
+    background-color: #444;
+    z-index: 1;
+    width: 42vw;
+    height: 42vw;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+}
+
+.App {
+    margin: 0 auto;
+}
+
+#root {
+    width: 100%;
+}
