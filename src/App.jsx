@@ -1,7 +1,7 @@
-import {useState} from "react";
+import {useState, useEffect} from "react";
 import "./App.css";
 import Board from "./components/Board";
-import {getNewBoard} from "./logic/gameLogic";
+import {getNewBoard, getPossibleMove} from "./logic/gameLogic";
 import {gameStatus} from "./logic/gameStatus";
 import Scoreboard from "./components/Scoreboard";
 
@@ -26,9 +26,21 @@ function App() {
     const [whiteCount, setWhiteCount] = useState(2);
     const [blackCount, setBlackCount] = useState(2);
     const [gameEnd, setGameEnd] = useState(false);
+    const [possibleMove, setPossibleMove] = useState(getPossibleMove(board, turn));
+
+    // Correctly placed useEffect to react to changes in board and turn
+    useEffect(() => {
+        setPossibleMove(getPossibleMove(board, turn));
+
+        const {whiteCount: newWhiteCount, blackCount: newBlackCount, gameEnd: newGameEnd} = gameStatus(board);
+        setWhiteCount(newWhiteCount);
+        setBlackCount(newBlackCount);
+        setGameEnd(newGameEnd);
+    }, [board, turn]);
 
     const makeMove = (row, col) => {
         let newBoard = getNewBoard(board, row, col, turn);
+        // console.log(newBoard);
         if (newBoard === null) {
             return;
         }
@@ -41,18 +53,12 @@ function App() {
 
         // Update the state with the new board
         setBoard(newBoard);
-
-        // Update the scoreboard
-        const {whiteCount: newWhiteCount, blackCount: newBlackCount, gameEnd: gameEnd} = gameStatus(newBoard);
-        setWhiteCount(newWhiteCount);
-        setBlackCount(newBlackCount);
-        setGameEnd(gameEnd);
     };
 
     return (
         <div className="App">
             <Scoreboard whiteCount={whiteCount} blackCount={blackCount} turn={turn} gameEnd={gameEnd} />
-            <Board board={board} makeMove={makeMove} />
+            <Board board={board} possibleMove={possibleMove} makeMove={makeMove} />
         </div>
     );
 }

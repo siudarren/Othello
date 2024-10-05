@@ -2,11 +2,15 @@ const cellStyles = {
     empty: "disk empty",
     black: "disk black",
     white: "disk white",
+    possible: "possible",
 };
 
-function Cell({value, onClick}) {
+function Cell({value, onClick, possible}) {
     // Determine the style based on the value
-    const className = cellStyles[value] || cellStyles.empty;
+    let className = cellStyles[value] || cellStyles.empty;
+    if (possible) {
+        className = "possible";
+    }
 
     return (
         <div className="cell" onClick={onClick}>

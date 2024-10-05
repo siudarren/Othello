@@ -60,6 +60,20 @@ function flipInDirection(board, row, col, dr, dc, color) {
             flipped = true;
         }
     }
-    console.log(flipped);
     return flipped;
+}
+
+export function getPossibleMove(board, color) {
+    // console.log("Checking");
+    let possibleMove = Array.from({length: board.length}, () => Array(board.length).fill(false));
+    for (let i = 0; i < board.length; i++) {
+        for (let j = 0; j < board.length; j++) {
+            if (board[i][j] === "empty") {
+                if (getNewBoard(board, i, j, color) !== null) {
+                    possibleMove[i][j] = true;
+                }
+            }
+        }
+    }
+    return possibleMove;
 }
