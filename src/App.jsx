@@ -1,7 +1,7 @@
 import {useState, useEffect} from "react";
 import "./App.css";
 import Board from "./components/Board";
-import {getNewBoard, getPossibleMove} from "./logic/gameLogic";
+import {getNewBoard, getPossibleMove, getBestMove} from "./logic/gameLogic";
 import {gameStatus} from "./logic/gameStatus";
 import Scoreboard from "./components/Scoreboard";
 
@@ -27,6 +27,7 @@ function App() {
     const [blackCount, setBlackCount] = useState(2);
     const [gameEnd, setGameEnd] = useState(false);
     const [possibleMove, setPossibleMove] = useState(getPossibleMove(board, turn));
+    const [bestMove, setBestMove] = useState();
 
     // Correctly placed useEffect to react to changes in board and turn
     useEffect(() => {
@@ -38,7 +39,15 @@ function App() {
         setGameEnd(newGameEnd);
     }, [board, turn]);
 
+    useEffect(() => {
+        setBestMove(getBestMove(board, turn, possibleMove));
+        console.log(getBestMove(board, turn, possibleMove));
+    }, [possibleMove]);
+
     const makeMove = (row, col) => {
+        if (!possibleMove[row][col]) {
+            return;
+        }
         let newBoard = getNewBoard(board, row, col, turn);
         // console.log(newBoard);
         if (newBoard === null) {

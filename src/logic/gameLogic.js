@@ -77,3 +77,57 @@ export function getPossibleMove(board, color) {
     }
     return possibleMove;
 }
+
+export function getBestMove(board, color, possibleMove) {
+    let max = 100 * board.length * board.length;
+    let maxRow = -1;
+    let maxCol = -1;
+
+    let newBoard = board.map((row) => [...row]);
+    for (let i = 0; i < newBoard.length; i++) {
+        for (let j = 0; j < newBoard.length; j++) {
+            if (possibleMove[i][j]) {
+                newBoard[i][j] = color;
+                let numMove = calcPossible(newBoard, color);
+
+                if (i === 0 || i === newBoard.length - 1) {
+                    numMove -= 10;
+                }
+                if (j === 0 || j === newBoard.length - 1) {
+                    numMove -= 10;
+                }
+
+                if (i === 1 && j === 1) {
+                    numMove += 20;
+                } else if (i === newBoard.length - 2 && j === 1) {
+                    numMove += 20;
+                } else if (i === 1 && j === newBoard.length - 2) {
+                    numMove += 20;
+                } else if (i === newBoard.length - 2 && j === newBoard.length - 2) {
+                    numMove += 20;
+                }
+
+                if (numMove < max) {
+                    max = numMove;
+                    maxRow = i;
+                    maxCol = j;
+                }
+            }
+        }
+    }
+
+    return [maxRow, maxCol];
+}
+
+function calcPossible(board, color) {
+    let count = 0;
+    let possibleMove = getPossibleMove(board, color);
+    for (let i = 0; i < board.length; i++) {
+        for (let j = 0; j < board.length; j++) {
+            if (possibleMove[i][j]) {
+                count += 1;
+            }
+        }
+    }
+    return count;
+}
