@@ -42,8 +42,38 @@
 
 .App {
     margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
 }
 
 #root {
     width: 100%;
+}
+
+.scoreboard {
+    margin: 0 auto;
+    font-size: 3rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    height: 30vh;
+    padding: 2.5vw;
+}
+
+.item {
+    display: flex;
+    align-items: center;
+    column-gap: 3rem;
+}
+
+.scoreboard p {
+    margin: 0;
+    padding: 0;
+    height: 3rem;
+    line-height: 1;
+}
+
+.scoreDisk {
+    width: 3rem;
+    height: 3rem;
+    border: #444 1px solid;
 }

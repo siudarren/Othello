@@ -2,6 +2,8 @@ import {useState} from "react";
 import "./App.css";
 import Board from "./components/Board";
 import {getNewBoard} from "./logic/gameLogic";
+import {gameStatus} from "./logic/gameStatus";
+import Scoreboard from "./components/Scoreboard";
 
 const initialBoard = () => {
     // Create an 8x8 grid filled with null (empty cells)
@@ -21,6 +23,9 @@ const initialBoard = () => {
 function App() {
     const [board, setBoard] = useState(initialBoard);
     const [turn, setTurn] = useState("black");
+    const [whiteCount, setWhiteCount] = useState(2);
+    const [blackCount, setBlackCount] = useState(2);
+    const [gameEnd, setGameEnd] = useState(false);
 
     const makeMove = (row, col) => {
         let newBoard = getNewBoard(board, row, col, turn);
@@ -34,11 +39,19 @@ function App() {
             setTurn("black");
         }
 
-        setBoard(newBoard); // Update the state with the new board
+        // Update the state with the new board
+        setBoard(newBoard);
+
+        // Update the scoreboard
+        const {whiteCount: newWhiteCount, blackCount: newBlackCount, gameEnd: gameEnd} = gameStatus(newBoard);
+        setWhiteCount(newWhiteCount);
+        setBlackCount(newBlackCount);
+        setGameEnd(gameEnd);
     };
 
     return (
         <div className="App">
+            <Scoreboard whiteCount={whiteCount} blackCount={blackCount} turn={turn} gameEnd={gameEnd} />
             <Board board={board} makeMove={makeMove} />
         </div>
     );

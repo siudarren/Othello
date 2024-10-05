@@ -1,6 +1,7 @@
 export function gameStatus(board) {
     let whiteCount = 0;
     let blackCount = 0;
+    let gameEnd = false;
     for (let i = 0; i < board.length; i++) {
         for (let j = 0; j < board.length; j++) {
             if (board[i][j] == "black") {
@@ -11,5 +12,8 @@ export function gameStatus(board) {
         }
     }
 
-    return {blackCount, whiteCount};
+    if (whiteCount + blackCount === board.length * board.length) {
+        gameEnd = true;
+    }
+    return {blackCount, whiteCount, gameEnd};
 }
