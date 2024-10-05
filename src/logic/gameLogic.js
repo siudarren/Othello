@@ -97,14 +97,21 @@ export function getBestMove(board, color, possibleMove) {
                     numMove -= 10;
                 }
 
+                if (i === 1 || i === newBoard.length - 2) {
+                    numMove += 5;
+                }
+                if (j === 1 || j === newBoard.length - 2) {
+                    numMove += 5;
+                }
+
                 if (i === 1 && j === 1) {
-                    numMove += 20;
+                    numMove += 10;
                 } else if (i === newBoard.length - 2 && j === 1) {
-                    numMove += 20;
+                    numMove += 10;
                 } else if (i === 1 && j === newBoard.length - 2) {
-                    numMove += 20;
+                    numMove += 10;
                 } else if (i === newBoard.length - 2 && j === newBoard.length - 2) {
-                    numMove += 20;
+                    numMove += 10;
                 }
 
                 if (numMove < max) {
@@ -115,11 +122,10 @@ export function getBestMove(board, color, possibleMove) {
             }
         }
     }
-
     return [maxRow, maxCol];
 }
 
-function calcPossible(board, color) {
+export function calcPossible(board, color) {
     let count = 0;
     let possibleMove = getPossibleMove(board, color);
     for (let i = 0; i < board.length; i++) {
