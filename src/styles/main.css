@@ -22,7 +22,6 @@
 
 .white {
     background-color: white; /* White piece */
-    border: 3px solid #444;
 }
 
 .empty {

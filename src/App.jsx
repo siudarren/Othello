@@ -1,6 +1,7 @@
 import {useState} from "react";
 import "./App.css";
 import Board from "./components/Board";
+import {getNewBoard} from "./logic/gameLogic";
 
 const initialBoard = () => {
     // Create an 8x8 grid filled with null (empty cells)
@@ -19,20 +20,21 @@ const initialBoard = () => {
 
 function App() {
     const [board, setBoard] = useState(initialBoard);
+    const [turn, setTurn] = useState("black");
 
     const makeMove = (row, col) => {
-        // Here you would include the logic to:
-        // 1. Validate the move
-        // 2. Flip the opponent's pieces
-        // 3. Update the board state
-
-        // Simple move validation and placement for demonstration:
-        if (board[row][col] === null) {
-            // Assuming you can only place in an empty spot
-            const newBoard = board.map((row) => [...row]); // Create a shallow copy of the board
-            newBoard[row][col] = "black"; // Just to demonstrate, always place black
-            setBoard(newBoard); // Update the state with the new board
+        let newBoard = getNewBoard(board, row, col, turn);
+        if (newBoard === null) {
+            return;
         }
+
+        if (turn === "black") {
+            setTurn("white");
+        } else {
+            setTurn("black");
+        }
+
+        setBoard(newBoard); // Update the state with the new board
     };
 
     return (
