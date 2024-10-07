@@ -5,6 +5,7 @@ const diskStyles = {
 
 const Scoreboard = ({whiteCount, blackCount, turn, gameEnd}) => {
     const className = diskStyles[turn]; // Proper placement of the variable declaration
+    
     return (
         <div className="scoreboard">
             <div className="item">
@@ -16,7 +17,7 @@ const Scoreboard = ({whiteCount, blackCount, turn, gameEnd}) => {
             </div>
             <div className="item">
                 <div className={className}></div>
-                <p>turn to move</p>
+                <p> to move</p>
             </div>
         </div>
     );
