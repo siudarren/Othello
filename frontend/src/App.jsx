@@ -1,8 +1,9 @@
 import {useState, useEffect} from "react";
 import "./App.css";
 import Board from "./components/Board";
-import {getNewBoard, getPossibleMove, getBestMove} from "./logic/gameLogic";
-import {gameStatus} from "./logic/gameStatus";
+import {getNewBoard} from "./logic/gameLogic";
+import {getGameStatus, getNumberOfPossibleMoves, getPossibleMoves} from "./logic/gameStatus";
+import {getBestMove, getBestMoveMiniMax, toggleColor} from "./logic/gameAI";
 import Scoreboard from "./components/Scoreboard";
 
 const initialBoard = () => {
@@ -26,39 +27,82 @@ function App() {
     const [whiteCount, setWhiteCount] = useState(2);
     const [blackCount, setBlackCount] = useState(2);
     const [gameEnd, setGameEnd] = useState(false);
-    const [possibleMove, setPossibleMove] = useState(getPossibleMove(board, turn));
-    const [bestMove, setBestMove] = useState();
+    const [possibleMoves, setPossibleMove] = useState(getPossibleMoves(board, turn));
+    const [bestMove, setBestMove] = useState([-1, -1]);
+    const [bestMoveMinimax, setBestMoveMinimax] = useState([-1, -1]);
+    const [auto, setAuto] = useState(true);
 
     // Correctly placed useEffect to react to changes in board and turn
     useEffect(() => {
-        setPossibleMove(getPossibleMove(board, turn));
+        const numMove = getNumberOfPossibleMoves(board, toggleColor(turn));
+        let colorToMove = turn;
 
-        const {whiteCount: newWhiteCount, blackCount: newBlackCount, gameEnd: newGameEnd} = gameStatus(board);
+        if (numMove !== 0) {
+            colorToMove = toggleColor(turn);
+        }
+
+        setPossibleMove(getPossibleMoves(board, colorToMove));
+
+        const {whiteCount: newWhiteCount, blackCount: newBlackCount, gameEnd: newGameEnd} = getGameStatus(board);
         setWhiteCount(newWhiteCount);
         setBlackCount(newBlackCount);
         setGameEnd(newGameEnd);
-    }, [board, turn]);
+
+        setTurn(colorToMove);
+    }, [board]);
 
     useEffect(() => {
-        setBestMove(getBestMove(board, turn, possibleMove));
-        console.log(getBestMove(board, turn, possibleMove));
-    }, [possibleMove]);
+        if (auto) {
+            if (turn === "black") {
+                setTimeout(() => {
+                    if (bestMoveMinimax[1] !== -1) {
+                        makeMove(bestMoveMinimax[0], bestMoveMinimax[1]);
+                    }
+                }, 100);
+            }
+        }
+    }, [bestMoveMinimax]);
+
+    useEffect(() => {
+        if (auto) {
+            if (turn === "white") {
+                setTimeout(() => {
+                    if (bestMoveMinimax[1] !== -1) {
+                        makeMove(bestMoveMinimax[0], bestMoveMinimax[1]);
+                    } else {
+                        console.log("No Best MINIMAX Move");
+                    }
+                }, 100);
+            }
+        }
+    }, [bestMoveMinimax]);
+
+    useEffect(() => {
+        setBestMove(getBestMove(board, turn, possibleMoves));
+        setBestMoveMinimax(getBestMoveMiniMax(board, turn, possibleMoves));
+        // console.log(getBestMove(board, turn, possibleMoves));
+    }, [possibleMoves]);
 
     const makeMove = (row, col) => {
-        if (!possibleMove[row][col]) {
+        if (gameEnd) {
             return;
         }
+        if (!possibleMoves[row][col]) {
+            console.log("Invalid Cell");
+            return;
+        }
+
         let newBoard = getNewBoard(board, row, col, turn);
         // console.log(newBoard);
         if (newBoard === null) {
             return;
         }
 
-        if (turn === "black") {
-            setTurn("white");
-        } else {
-            setTurn("black");
-        }
+        // if (turn === "black") {
+        //     setTurn("white");
+        // } else {
+        //     setTurn("black");
+        // }
 
         // Update the state with the new board
         setBoard(newBoard);
@@ -67,7 +111,7 @@ function App() {
     return (
         <div className="App">
             <Scoreboard whiteCount={whiteCount} blackCount={blackCount} turn={turn} gameEnd={gameEnd} />
-            <Board board={board} possibleMove={possibleMove} makeMove={makeMove} />
+            <Board board={board} possibleMoves={possibleMoves} makeMove={makeMove} bestMove={bestMoveMinimax} />
         </div>
     );
 }

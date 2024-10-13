@@ -1,6 +1,6 @@
 import Cell from "./Cell";
 
-function Board({board, makeMove, possibleMove}) {
+function Board({board, makeMove, possibleMoves, bestMove}) {
     return (
         <div className="board">
             {board.map((row, rowIndex) =>
@@ -8,8 +8,9 @@ function Board({board, makeMove, possibleMove}) {
                     <Cell
                         key={`${rowIndex}-${colIndex}`}
                         value={cell}
-                        possible={possibleMove[rowIndex][colIndex]}
+                        possible={possibleMoves[rowIndex][colIndex]}
                         onClick={() => makeMove(rowIndex, colIndex)}
+                        isBestMove={bestMove && rowIndex === bestMove[0] && colIndex === bestMove[1]}
                     />
                 ))
             )}
