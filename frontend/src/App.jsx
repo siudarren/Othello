@@ -35,6 +35,8 @@ function App() {
 
     const humanColor = toggleColor(aiColor);
 
+    const [showHelper, setShowHelper] = useState(true);
+
     const [board, setBoard] = useState(initialBoard());
     const [turn, setTurn] = useState("black"); // black always starts
     const [possibleMoves, setPossibleMoves] = useState(() => getPossibleMoves(initialBoard(), "black"));
@@ -122,9 +124,17 @@ function App() {
         initializeGame();
     };
 
+    const setHelper = (turnOn) => {
+        if (turnOn && !showHelper) {
+            setShowHelper(true);
+        } else if (!turnOn && showHelper) {
+            setShowHelper(false);
+        }
+    };
+
     return (
         <div className={`App ${!sideChosen ? "modal-open" : ""}`}>
-            <Board board={board} possibleMoves={possibleMoves} makeMove={onCellClick} />
+            <Board board={board} possibleMoves={possibleMoves} makeMove={onCellClick} showHelper={showHelper} />
             {/** If side not chosen yet, show a simple modal/panel **/}
             {!sideChosen ? (
                 <div className="side-selection-modal">
@@ -141,10 +151,22 @@ function App() {
                     <Scoreboard whiteCount={whiteCount} blackCount={blackCount} turn={turn} gameEnd={gameEnd} />
 
                     {/** Optional: let them switch side mid‐game **/}
-
-                    <button onClick={resetGame} className="reset">
-                        Reset
-                    </button>
+                    <div className="Settings">
+                        <button onClick={resetGame} className="reset">
+                            RESET
+                        </button>
+                        <h3 className="Setting-title">HELPER</h3>
+                        <div className="on-off">
+                            <div className={`on-button${showHelper ? " active" : ""}`} onClick={() => setHelper(true)}>
+                                On
+                            </div>
+                            <div
+                                className={`off-button${!showHelper ? " active" : ""}`}
+                                onClick={() => setHelper(false)}>
+                                Off
+                            </div>
+                        </div>
+                    </div>
                 </>
             )}
         </div>

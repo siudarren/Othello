@@ -46,7 +46,7 @@
 
 .board {
     margin: 0 auto;
-    
+
     border: 5px solid #444;
     border-radius: 5px;
     background-color: #444;
@@ -83,11 +83,11 @@
     width: 20vw;
     height: 15vw;
     justify-items: center;
-    position: absolute;  
+    position: absolute;
     /* move it down to the middle of the container… */
-    top: 50%;           
+    top: 50%;
     /* …then pull it up by half the board’s height (21vw) */
-    transform: translateY(-21vw);
+    transform: translateY(-24vw);
 
     justify-self: center;
     grid-column: 1/2;
@@ -95,7 +95,6 @@
     border: #444 1px solid;
     border-radius: 8px;
     background-color: #f9f9f9;
-
 }
 
 .item {
@@ -115,22 +114,6 @@
     width: 2rem;
     height: 2rem;
     border: #444 1px solid;
-}
-
-.reset {
-    color: #213547;
-    height: 4vw;
-    width: 20vw;
-    border: #444 1px solid;
-    grid-column: 3/4;
-    padding: none;
-
-    position: absolute;
-    /* move it down to the middle of the container… */
-    top: 50%;
-    /* …then pull it up by half the board’s height (21vw) */
-    transform: translateY(-21vw);
-    justify-self: center;
 }
 
 .side-selection-modal {
@@ -157,6 +140,66 @@
     display: none;
 }
 
-.choose-side-button{
+.choose-side-button {
     border: #444 1px solid;
+}
+
+.Settings {
+    grid-column: 3/4;
+    position: absolute;
+    /* move it down to the middle of the container… */
+    top: 50%;
+    /* …then pull it up by half the board’s height (21vw) */
+    transform: translateY(-24vw);
+    justify-self: center;
+    width: 20vw;
+}
+
+.reset {
+    color: #213547;
+    height: 4vw;
+    border: #444 1px solid;
+    padding: none;
+    width: 100%;
+    font-size: 1.5em;
+    font-weight: bold;
+    display: inline-flex; /* or just `flex` if it’s a block-level button */
+    align-items: center; /* vertical centering */
+    justify-content: center; /* horizontal centering (optional if you already have text-align) */
+}
+
+.Setting-title {
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.5em;
+    margin-bottom: 0;
+}
+
+.on-off {
+    display: flex;
+    justify-content: space-between;
+}
+
+.on-button,
+.off-button {
+    width: 48%;
+    display: inline-flex; /* or just `flex` if it’s a block-level button */
+    align-items: center; /* vertical centering */
+    justify-content: center;
+    border: #444 1px solid;
+    border-radius: 8px;
+    height: 2em;
+    background-color: #f9f9f9;
+    font-weight: bold;
+}
+
+/* active = 80% brightness */
+.on-button.active,
+.off-button.active {
+    filter: brightness(0.8);
+}
+
+.on-button:hover,
+.off-button:hover {
+    filter: brightness(60%);
 }
