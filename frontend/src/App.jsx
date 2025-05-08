@@ -1,148 +1,152 @@
 import {useState, useEffect} from "react";
+import {flushSync} from "react-dom";
+
 import "./App.css";
 import Board from "./components/Board";
-import {getNewBoard} from "./logic/gameLogic";
-import {getGameStatus, getNumberOfPossibleMoves, getPossibleMoves} from "./logic/gameStatus";
-import {getBestMove, getBestMoveMiniMax, getBestMoveMiniMax2, toggleColor} from "./logic/gameAI";
 import Scoreboard from "./components/Scoreboard";
 
+import {getNewBoard} from "./logic/gameLogic";
+import {getGameStatus, getNumberOfPossibleMoves, getPossibleMoves} from "./logic/gameStatus";
+import {getBestMoveMiniMax2, toggleColor} from "./logic/gameAI";
+
+// helper for an “empty” 8×8 move grid
+const emptyGrid = () =>
+    Array(8)
+        .fill(null)
+        .map(() => Array(8).fill(false));
+
+// set up the starting four pieces
 const initialBoard = () => {
-    // Create an 8x8 grid filled with null (empty cells)
-    const board = Array(8)
+    const b = Array(8)
         .fill(null)
         .map(() => Array(8).fill("empty"));
-
-    // Setting up the four initial pieces in the center
-    board[3][3] = "white";
-    board[3][4] = "black";
-    board[4][3] = "black";
-    board[4][4] = "white";
-
-    return board;
+    b[3][3] = "white";
+    b[3][4] = "black";
+    b[4][3] = "black";
+    b[4][4] = "white";
+    return b;
 };
 
 function App() {
-    const [board, setBoard] = useState(initialBoard);
-    const [turn, setTurn] = useState("black");
+    // what color the AI plays
+    const [aiColor, setAiColor] = useState("black");
+    // has the user already chosen a side?
+    const [sideChosen, setSideChosen] = useState(false);
+
+    const humanColor = toggleColor(aiColor);
+
+    const [board, setBoard] = useState(initialBoard());
+    const [turn, setTurn] = useState("black"); // black always starts
+    const [possibleMoves, setPossibleMoves] = useState(() => getPossibleMoves(initialBoard(), "black"));
     const [whiteCount, setWhiteCount] = useState(2);
     const [blackCount, setBlackCount] = useState(2);
     const [gameEnd, setGameEnd] = useState(false);
-    const [possibleMoves, setPossibleMoves] = useState(getPossibleMoves(board, turn));
-    const [bestMove, setBestMove] = useState([-1, -1]);
-    const [bestMoveMinimax, setBestMoveMinimax] = useState([-1, -1]);
-    const [bestMoveMinimax2, setBestMoveMinimax2] = useState([-1, -1]);
-    const [auto, setAuto] = useState(true);
+    const auto = true;
 
-    // Correctly placed useEffect to react to changes in board and turn
+    // 1️. Recompute moves / skip‐turn / game‐over whenever board or turn changes
     useEffect(() => {
-        const numMove = getNumberOfPossibleMoves(board, toggleColor(turn));
-        let colorToMove = turn;
-
-        if (numMove !== 0) {
-            colorToMove = toggleColor(turn);
-        }
-
-        setPossibleMoves(getPossibleMoves(board, colorToMove));
-
-        const {whiteCount: newWhiteCount, blackCount: newBlackCount, gameEnd: newGameEnd} = getGameStatus(board);
-        setWhiteCount(newWhiteCount);
-        setBlackCount(newBlackCount);
-        setGameEnd(newGameEnd);
-
-        setTurn(colorToMove);
-    }, [board]);
-
-    useEffect(() => {
-        if (auto) {
-            if (turn === "black") {
-                setTimeout(() => {
-                    // if (bestMove[1] !== -1) {
-                    //     makeMove(bestMove[0], bestMove[1]);
-                    // }
-                    if (bestMoveMinimax2[1] !== -1) {
-                        makeMove(bestMoveMinimax2[0], bestMoveMinimax2[1]);
-                    } else {
-                        console.log("No Best MINIMAX Move");
-                    }
-                }, 100);
-            }
-        }
-    }, [bestMoveMinimax2]);
-
-    useEffect(() => {
-        if (auto) {
-            if (turn === "white") {
-                setTimeout(() => {
-                    if (bestMoveMinimax[1] !== -1) {
-                        makeMove(bestMoveMinimax[0], bestMoveMinimax[1]);
-                    } else {
-                        console.log("No Best MINIMAX Move");
-                    }
-                }, 100);
-            }
-        }
-    }, [bestMoveMinimax]);
-
-    useEffect(() => {
-        setBestMove(getBestMove(board, turn, possibleMoves));
-        if (turn === "white") {
-            setBestMoveMinimax(getBestMoveMiniMax(board, turn, possibleMoves, 5));
+        const myMoves = getNumberOfPossibleMoves(board, turn);
+        if (myMoves > 0) {
+            setPossibleMoves(getPossibleMoves(board, turn));
         } else {
-            setBestMoveMinimax2(getBestMoveMiniMax2(board, turn, possibleMoves, 5));
-        }
-    }, [possibleMoves]);
-
-    const makeMove = (row, col) => {
-        if (gameEnd) {
-            return;
-        }
-        if (!possibleMoves[row][col]) {
-            console.log("Invalid Cell");
-            return;
+            const other = toggleColor(turn);
+            const theirMoves = getNumberOfPossibleMoves(board, other);
+            if (theirMoves > 0) {
+                setTurn(other);
+                setPossibleMoves(getPossibleMoves(board, other));
+            } else {
+                setGameEnd(true);
+                setPossibleMoves(emptyGrid());
+            }
         }
 
-        let newBoard = getNewBoard(board, row, col, turn);
-        // console.log(newBoard);
-        if (newBoard === null) {
-            return;
-        }
+        const counts = getGameStatus(board);
+        setWhiteCount(counts.whiteCount);
+        setBlackCount(counts.blackCount);
+    }, [board, turn]);
 
-        // if (turn === "black") {
-        //     setTurn("white");
-        // } else {
-        //     setTurn("black");
-        // }
+    // 2️. When it’s the AI’s turn, think & play
+    useEffect(() => {
+        if (!auto || gameEnd) return;
+        if (turn !== aiColor) return;
 
-        // Update the state with the new board
-        setBoard(newBoard);
+        setTimeout(() => {
+            const moves = getPossibleMoves(board, aiColor);
+            const [r, c] = getBestMoveMiniMax2(board, aiColor, moves, 5);
+            if (c !== -1) {
+                applyMove(r, c, aiColor);
+            }
+        }, 100);
+    }, [turn, board, auto, gameEnd, aiColor]);
+
+    // 3️. Handle human clicks
+    const onCellClick = (r, c) => {
+        if (turn !== humanColor || gameEnd) return;
+        if (!possibleMoves[r][c]) return;
+        applyMove(r, c, humanColor);
     };
 
+    const applyMove = (row, col, color) => {
+        // run the legality check & get the new board
+        const newBoard = getNewBoard(board, row, col, color);
+        if (!newBoard) {
+            console.error("applyMove: illegal move", {row, col, color});
+            return;
+        }
+
+        // flush both updates together so React never sees an inconsistent in-between state
+        flushSync(() => {
+            setBoard(newBoard);
+            setTurn(toggleColor(color));
+        });
+    };
+
+    // 4️. Reset
     const resetGame = () => {
+        setSideChosen(false);
+        initializeGame();
+    };
+
+    // 5. InitializeBoard
+    const initializeGame = () => {
         const fresh = initialBoard();
         setBoard(fresh);
         setTurn("black");
-        setWhiteCount(2);
-        setBlackCount(2);
         setGameEnd(false);
-        setPossibleMoves(getPossibleMoves(fresh, "black"));
-        setBestMove([-1, -1]);
-        setBestMoveMinimax([-1, -1]);
-        setBestMoveMinimax2([-1, -1]);
-        // bestMove and bestMoveMiniMax will update automatically
+    };
+
+    // call this when the user picks a side
+    const chooseSide = (color) => {
+        setAiColor(color);
+        setSideChosen(true);
+        initializeGame();
     };
 
     return (
-        <div className="App">
-            <Scoreboard whiteCount={whiteCount} blackCount={blackCount} turn={turn} gameEnd={gameEnd} />
-            <Board
-                board={board}
-                possibleMoves={possibleMoves}
-                makeMove={makeMove}
-                bestMove={turn === "white" ? bestMoveMinimax : bestMoveMinimax2}
-            />
-            <button onClick={resetGame} className="reset">
-                Reset
-            </button>
+        <div className={`App ${!sideChosen ? "modal-open" : ""}`}>
+            <Board board={board} possibleMoves={possibleMoves} makeMove={onCellClick} />
+            {/** If side not chosen yet, show a simple modal/panel **/}
+            {!sideChosen ? (
+                <div className="side-selection-modal">
+                    <h2>Choose Your Side</h2>
+                    <button onClick={() => chooseSide("black")} className="choose-side-button">
+                        You play White (AI is Black)
+                    </button>
+                    <button onClick={() => chooseSide("white")} className="choose-side-button">
+                        You play Black (AI is White)
+                    </button>
+                </div>
+            ) : (
+                <>
+                    <Scoreboard whiteCount={whiteCount} blackCount={blackCount} turn={turn} gameEnd={gameEnd} />
+
+                    {/** Optional: let them switch side mid‐game **/}
+
+                    <button onClick={resetGame} className="reset">
+                        Reset
+                    </button>
+                </>
+            )}
         </div>
     );
 }

@@ -46,20 +46,30 @@
 
 .board {
     margin: 0 auto;
+    
     border: 5px solid #444;
     border-radius: 5px;
     background-color: #444;
     z-index: 1;
-    width: 42vw;
-    height: 42vw;
+    width: 48vw;
+    height: 48vw;
     display: grid;
     grid-template-columns: repeat(8, 1fr);
+    position: absolute; /* fill the whole container */
+    top: 50%;
+    left: 50%;
+    z-index: 0;
+    transform: translate(-50%, -50%);
 }
 
 .App {
     margin: 0 auto;
     display: grid;
     grid-template-columns: 1fr 2fr 1fr;
+    position: relative; /* establish a stacking context */
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
 }
 
 #root {
@@ -67,12 +77,25 @@
 }
 
 .scoreboard {
-    margin: 0 auto;
     font-size: 2rem;
     display: grid;
     grid-template-columns: 1fr;
-    height: 30vh;
-    padding: 2.5vw;
+    width: 20vw;
+    height: 15vw;
+    justify-items: center;
+    position: absolute;  
+    /* move it down to the middle of the container… */
+    top: 50%;           
+    /* …then pull it up by half the board’s height (21vw) */
+    transform: translateY(-21vw);
+
+    justify-self: center;
+    grid-column: 1/2;
+
+    border: #444 1px solid;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+
 }
 
 .item {
@@ -96,7 +119,44 @@
 
 .reset {
     color: #213547;
-    height: 3em;
-    width: 10em;
+    height: 4vw;
+    width: 20vw;
+    border: #444 1px solid;
+    grid-column: 3/4;
+    padding: none;
+
+    position: absolute;
+    /* move it down to the middle of the container… */
+    top: 50%;
+    /* …then pull it up by half the board’s height (21vw) */
+    transform: translateY(-21vw);
+    justify-self: center;
+}
+
+.side-selection-modal {
+    position: absolute; /* float on top of the board */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10; /* above the board */
+    background: rgba(255, 255, 255, 0.95);
+    padding: 2rem;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+.side-selection-modal button {
+    margin: 0.5rem;
+    padding: 0.5rem 1rem;
+}
+
+/* only when the modal is open… */
+.App.modal-open .board .disk,
+.App.modal-open .board .possible,
+.App.modal-open .board .bestMove {
+    display: none;
+}
+
+.choose-side-button{
     border: #444 1px solid;
 }
