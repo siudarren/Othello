@@ -2,14 +2,13 @@
     "name": "reversi-fullstack",
     "version": "1.0.0",
     "engines": {
-      "node": "16.x"              /* or >=18 if you prefer */
+        "node": "16.x"
     },
     "scripts": {
-      "start": "node backend/server.js",
-      "heroku-postbuild": "cd frontend && npm install && npm run build"
+        "start": "node backend/server.js",
+        "heroku-postbuild": "cd frontend && npm install && npm run build"
     },
     "dependencies": {
-      "express": "^4.21.1"
+        "express": "^4.21.1"
     }
-  }
-  
+}
