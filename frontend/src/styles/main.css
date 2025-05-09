@@ -101,6 +101,7 @@
     display: flex;
     align-items: center;
     column-gap: 1rem;
+    justify-content: center;
 }
 
 .scoreboard p {
@@ -108,12 +109,14 @@
     padding: 0;
     height: 2rem;
     line-height: 1;
+    text-align: center;
 }
 
-.scoreDisk.disk {
-    width: 2rem;
-    height: 2rem;
+.scoreDisk {
+    width: 2vw;
+    height: 2vw;
     border: #444 1px solid;
+    border-radius: 50%;
 }
 
 .side-selection-modal {
@@ -143,6 +146,10 @@
 .choose-side-button {
     border: #444 1px solid;
 }
+.choose-side-button:hover {
+    filter: brightness(0.8);
+    border: #444 1px solid;
+}
 
 .Settings {
     grid-column: 3/4;
@@ -157,11 +164,11 @@
 
 .reset {
     color: #213547;
-    height: 4vw;
+    height: 4rem;
     border: #444 1px solid;
     padding: none;
     width: 100%;
-    font-size: 1.5em;
+    font-size: 1.6rem;
     font-weight: bold;
     display: inline-flex; /* or just `flex` if it’s a block-level button */
     align-items: center; /* vertical centering */
@@ -171,7 +178,7 @@
 .Setting-title {
     text-align: center;
     font-weight: bold;
-    font-size: 1.5em;
+    font-size: 1.8rem;
     margin-bottom: 0;
 }
 
@@ -188,9 +195,10 @@
     justify-content: center;
     border: #444 1px solid;
     border-radius: 8px;
-    height: 2em;
+    height: 2.4rem;
     background-color: #f9f9f9;
     font-weight: bold;
+    font-size: 1.3rem;
 }
 
 /* active = 80% brightness */
@@ -202,4 +210,50 @@
 .on-button:hover,
 .off-button:hover {
     filter: brightness(60%);
+}
+
+@media (max-width: 600px) {
+    .App {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        overflow-y: auto;
+        height: 100vh;
+    }
+    /* turn the board into a normal flex item */
+    .board {
+        position: static !important;
+        transform: none !important;
+        margin: 1rem 0;
+        width: 80vw;
+        height: 80vw;
+    }
+    /* same for the two side panels: scoreboard and Settings */
+    .scoreboard,
+    .Settings {
+        position: static !important;
+        transform: none !important;
+        margin: 1rem 0;
+        width: 80vw;
+    }
+
+    /* center their contents */
+    .scoreboard {
+        justify-self: center; /* if you still have grid rules */
+        align-self: center;
+        font-size: 3rem;
+    }
+
+    .Settings {
+        justify-self: center;
+        align-self: center;
+        order: -1;
+    }
+    .side-selection-modal {
+        width: 80%;
+        position: absolute; /* float on top of the board */
+        top: 30%;
+        font-size: 2.5rem;
+    }
 }

@@ -7,7 +7,7 @@ import Scoreboard from "./components/Scoreboard";
 
 import {getNewBoard} from "./logic/gameLogic";
 import {getGameStatus, getNumberOfPossibleMoves, getPossibleMoves} from "./logic/gameStatus";
-import {getBestMoveMiniMax2, toggleColor} from "./logic/gameAI";
+import {getBestMoveMiniMax, toggleColor} from "./logic/gameAI";
 
 // helper for an “empty” 8×8 move grid
 const emptyGrid = () =>
@@ -29,7 +29,7 @@ const initialBoard = () => {
 
 function App() {
     // what color the AI plays
-    const [aiColor, setAiColor] = useState("black");
+    const [aiColor, setAiColor] = useState("none");
     // has the user already chosen a side?
     const [sideChosen, setSideChosen] = useState(false);
 
@@ -43,19 +43,22 @@ function App() {
     const [whiteCount, setWhiteCount] = useState(2);
     const [blackCount, setBlackCount] = useState(2);
     const [gameEnd, setGameEnd] = useState(false);
-    const auto = true;
+    const [auto, setAuto] = useState(false);
 
     // 1️. Recompute moves / skip‐turn / game‐over whenever board or turn changes
     useEffect(() => {
         const myMoves = getNumberOfPossibleMoves(board, turn);
         if (myMoves > 0) {
+            setGameEnd(false);
             setPossibleMoves(getPossibleMoves(board, turn));
         } else {
             const other = toggleColor(turn);
             const theirMoves = getNumberOfPossibleMoves(board, other);
             if (theirMoves > 0) {
+                setGameEnd(false);
                 setTurn(other);
                 setPossibleMoves(getPossibleMoves(board, other));
+                return;
             } else {
                 setGameEnd(true);
                 setPossibleMoves(emptyGrid());
@@ -69,16 +72,20 @@ function App() {
 
     // 2️. When it’s the AI’s turn, think & play
     useEffect(() => {
-        if (!auto || gameEnd) return;
-        if (turn !== aiColor) return;
+        if (gameEnd) return;
 
-        setTimeout(() => {
-            const moves = getPossibleMoves(board, aiColor);
-            const [r, c] = getBestMoveMiniMax2(board, aiColor, moves, 5);
+        if (!auto) {
+            if (turn !== aiColor) return;
+        }
+
+        const timerId = setTimeout(() => {
+            const moves = getPossibleMoves(board, turn);
+            const [r, c] = getBestMoveMiniMax(board, turn, moves, 3, 2);
             if (c !== -1) {
-                applyMove(r, c, aiColor);
+                applyMove(r, c, turn);
             }
-        }, 100);
+        }, 250);
+        return () => clearTimeout(timerId);
     }, [turn, board, auto, gameEnd, aiColor]);
 
     // 3️. Handle human clicks
@@ -106,7 +113,9 @@ function App() {
     // 4️. Reset
     const resetGame = () => {
         setSideChosen(false);
+        setAuto(false);
         initializeGame();
+        setAiColor("none");
     };
 
     // 5. InitializeBoard
@@ -120,6 +129,12 @@ function App() {
     // call this when the user picks a side
     const chooseSide = (color) => {
         setAiColor(color);
+        setSideChosen(true);
+        initializeGame();
+    };
+
+    const botVersusBot = () => {
+        setAuto(true);
         setSideChosen(true);
         initializeGame();
     };
@@ -145,12 +160,20 @@ function App() {
                     <button onClick={() => chooseSide("white")} className="choose-side-button">
                         You play Black (AI is White)
                     </button>
+                    <button onClick={() => botVersusBot()} className="choose-side-button">
+                        I want to see the bots play against each other
+                    </button>
                 </div>
             ) : (
                 <>
-                    <Scoreboard whiteCount={whiteCount} blackCount={blackCount} turn={turn} gameEnd={gameEnd} />
+                    <Scoreboard
+                        whiteCount={whiteCount}
+                        blackCount={blackCount}
+                        turn={turn}
+                        gameEnd={gameEnd}
+                        aiColor={aiColor}
+                    />
 
-                    {/** Optional: let them switch side mid‐game **/}
                     <div className="Settings">
                         <button onClick={resetGame} className="reset">
                             RESET
