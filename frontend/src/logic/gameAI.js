@@ -1,5 +1,11 @@
 import {getNewBoard} from "./gameLogic";
-import {getGameStatus, getNumberOfPossibleMoves, getPossibleMoves} from "./gameStatus";
+import {
+    getGameStatus,
+    getNumberOfPossibleMoves,
+    getPossibleMoves,
+    countStableDiscs,
+    countFrontierDiscs,
+} from "./gameStatus";
 
 function minimax(board, depth, isMaximizingPlayer, color, maximizingColor, method) {
     if (depth === 0) {
@@ -53,52 +59,6 @@ function minimax(board, depth, isMaximizingPlayer, color, maximizingColor, metho
 function evaluateBoard(board, maximizingColor) {
     const {whiteCount, blackCount} = getGameStatus(board);
     const opponentColor = toggleColor(maximizingColor);
-
-    let score = 0;
-
-    // Counts
-    const myCount = maximizingColor === "black" ? blackCount : whiteCount;
-    const opponentCount = maximizingColor === "black" ? whiteCount : blackCount;
-
-    // Basic heuristic: difference in piece counts
-    score += myCount - opponentCount;
-
-    // Possible moves
-    const myPossibleMoves = getNumberOfPossibleMoves(board, maximizingColor);
-    const opponentPossibleMoves = getNumberOfPossibleMoves(board, opponentColor);
-    score += myPossibleMoves - opponentPossibleMoves;
-
-    // Corners
-    const corners = [
-        board[0][0],
-        board[0][board.length - 1],
-        board[board.length - 1][0],
-        board[board.length - 1][board.length - 1],
-    ];
-    corners.forEach((corner) => {
-        if (corner === maximizingColor) score += 10;
-        else if (corner === opponentColor) score -= 10;
-    });
-
-    // Edges
-    for (let i = 1; i < board.length - 1; i++) {
-        if (board[0][i] === maximizingColor) score += 5;
-        if (board[board.length - 1][i] === maximizingColor) score += 5;
-        if (board[i][0] === maximizingColor) score += 5;
-        if (board[i][board.length - 1] === maximizingColor) score += 5;
-
-        if (board[0][i] === opponentColor) score -= 5;
-        if (board[board.length - 1][i] === opponentColor) score -= 5;
-        if (board[i][0] === opponentColor) score -= 5;
-        if (board[i][board.length - 1] === opponentColor) score -= 5;
-    }
-
-    return score;
-}
-
-function evaluateBoard2(board, maximizingColor) {
-    const {whiteCount, blackCount} = getGameStatus(board);
-    const opponentColor = toggleColor(maximizingColor);
     const WEIGHTS = [
         [100, -20, 10, 5, 5, 10, -20, 100],
         [-20, -50, -2, -2, -2, -2, -50, -20],
@@ -149,6 +109,76 @@ function evaluateBoard2(board, maximizingColor) {
         }
     }
     score += positionalScore;
+
+    return score;
+}
+
+function evaluateBoard2(board, maximizingColor) {
+    const {whiteCount, blackCount} = getGameStatus(board);
+    const opponentColor = toggleColor(maximizingColor);
+    const WEIGHTS = [
+        [100, -20, 10, 5, 5, 10, -20, 100],
+        [-20, -50, -2, -2, -2, -2, -50, -20],
+        [10, -2, 5, 1, 1, 5, -2, 10],
+        [5, -2, 1, 0, 0, 1, -2, 5],
+        [5, -2, 1, 0, 0, 1, -2, 5],
+        [10, -2, 5, 1, 1, 5, -2, 10],
+        [-20, -50, -2, -2, -2, -2, -50, -20],
+        [100, -20, 10, 5, 5, 10, -20, 100],
+    ];
+
+    let phase = whiteCount + blackCount < 40 ? "early" : whiteCount + blackCount < 55 ? "mid" : "end";
+    // const phase_ratio = Math.min(Math.max((whiteCount + blackCount - 20) / 40, 0), 1);
+
+    let pieceCountWeight;
+    let possibleMoveWeight;
+    let stabilityWeight;
+    let frontierWeight;
+
+    if (phase === "early") {
+        pieceCountWeight = 5;
+        possibleMoveWeight = 5;
+        stabilityWeight = 50;
+        frontierWeight = 200;
+    } else if (phase === "mid") {
+        pieceCountWeight = 20;
+        possibleMoveWeight = 3;
+        stabilityWeight = 200;
+        frontierWeight = 20;
+    } else if (phase === "end") {
+        pieceCountWeight = 200;
+        possibleMoveWeight = 1;
+        stabilityWeight = 500;
+        frontierWeight = 10;
+    }
+
+    let score = 0;
+
+    // Counts
+    const myCount = maximizingColor === "black" ? blackCount : whiteCount;
+    const opponentCount = maximizingColor === "black" ? whiteCount : blackCount;
+
+    // Basic heuristic: difference in piece counts
+    score += (myCount - opponentCount) * pieceCountWeight;
+
+    // Possible moves
+    const myPossibleMoves = getNumberOfPossibleMoves(board, maximizingColor);
+    const opponentPossibleMoves = getNumberOfPossibleMoves(board, opponentColor);
+    score += (myPossibleMoves - opponentPossibleMoves) * possibleMoveWeight;
+
+    let positionalScore = 0;
+    for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+            if (board[r][c] === maximizingColor) positionalScore += WEIGHTS[r][c];
+            else if (board[r][c] === opponentColor) positionalScore -= WEIGHTS[r][c];
+        }
+    }
+    score += positionalScore;
+
+    const {stableMy, stableOpp} = countStableDiscs(board, maximizingColor);
+    const {frontierMy, frontierOpp} = countFrontierDiscs(board, maximizingColor);
+    score += stabilityWeight * (stableMy - stableOpp);
+    score -= frontierWeight * (frontierMy - frontierOpp);
 
     return score;
 }

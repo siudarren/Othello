@@ -80,7 +80,12 @@ function App() {
 
         const timerId = setTimeout(() => {
             const moves = getPossibleMoves(board, turn);
-            const [r, c] = getBestMoveMiniMax(board, turn, moves, 3, 2);
+            let [r, c] = [-1, -1];
+            if (turn === "white") {
+                [r, c] = getBestMoveMiniMax(board, turn, moves, 5, 2);
+            } else if (turn === "black") {
+                [r, c] = getBestMoveMiniMax(board, turn, moves, 5, 2);
+            }
             if (c !== -1) {
                 applyMove(r, c, turn);
             }
@@ -153,6 +158,7 @@ function App() {
             {/** If side not chosen yet, show a simple modal/panel **/}
             {!sideChosen ? (
                 <div className="side-selection-modal">
+                    <h1>Welcome to Darren's Reversi Game</h1>
                     <h2>Choose Your Side</h2>
                     <button onClick={() => chooseSide("black")} className="choose-side-button">
                         You play White (AI is Black)
